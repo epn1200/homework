@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -18,28 +19,44 @@
   <p id="msg"></p>
 
   <script>
-    const API_URL = "[https://script.google.com/macros/s/【貼上你部署後的網址】/exec](https://script.google.com/macros/s/AKfycbxvSt8eUEVxkG53IZoFlhnAhvOOvL91kLXEwkpqtswIETkkRBZBp3sHkSZMUIZG4PZ-/exec)";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxvSt8eUEVxkG53IZoFlhnAhvOOvL91kLXEwkpqtswIETkkRBZBp3sHkSZMUIZG4PZ-/exec";
 
-    function mark(status) {
+    async function mark(status) {
       const seat = document.getElementById("seat").value;
       if (!seat) {
         alert("請輸入座號！");
         return;
       }
 
-      fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: seat, status: status })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("msg").innerText = `✅ ${data.studentId} 號登記完成`;
-        document.getElementById("seat").value = "";
-      })
-      .catch(err => {
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ studentId: seat, status: status })
+        });
+
+        // 先拿文字
+        const text = await res.text();
+
+        let data;
+        try {
+          data = JSON.parse(text); // 嘗試解析 JSON
+        } catch(err) {
+          // 回傳不是 JSON，顯示原始內容
+          document.getElementById("msg").innerText = "⚠️ API 回傳不是 JSON:\n" + text;
+          return;
+        }
+
+        if (data.status === "ok") {
+          document.getElementById("msg").innerText = `✅ ${data.studentId} 號登記完成`;
+          document.getElementById("seat").value = "";
+        } else {
+          document.getElementById("msg").innerText = "⚠️ 登記失敗: " + JSON.stringify(data);
+        }
+
+      } catch(err) {
         document.getElementById("msg").innerText = "⚠️ 發生錯誤：" + err;
-      });
+      }
     }
   </script>
 </body>
