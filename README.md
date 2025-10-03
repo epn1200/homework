@@ -1,70 +1,43 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>作業登記系統</title>
+  <title>作業繳交登記</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    input, button { padding: 8px; margin: 5px; font-size: 16px; }
+    #msg { margin-top: 10px; font-weight: bold; color: green; }
+  </style>
 </head>
 <body>
-  <h2>作業登記系統</h2>
-  <video id="camera" width="300" height="200" style="display:none;"></video>
-  
-  <form id="submitForm">
-    <label>座號：</label>
-    <input type="text" id="studentId" required>
-    <button type="submit">登記</button>
-  </form>
+  <h2>📚 作業繳交登記</h2>
+  <label>座號：<input type="number" id="seat" min="1" max="30"></label><br>
+  <button onclick="mark('已繳交')">✅ 已繳交</button>
+  <button onclick="mark('未繳交')">❌ 未繳交</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <p id="msg"></p>
+
   <script>
-    const video = document.getElementById('camera');
-    const studentIdInput = document.getElementById('studentId');
-    const form = document.getElementById('submitForm');
-    const API_URL = "[YOUR_GOOGLE_SCRIPT_URL](https://script.google.com/macros/s/AKfycbyR86BoMxyPYGLTNzZQMD1471HtuilyLWAhVWIjOceRNL9UUGmE54vUY5JnvozGMwVP/exec)"; // ← 換成你的 GAS 網址
+    const API_URL = "[https://script.google.com/macros/s/xxxxxxxx/exec](https://script.google.com/macros/library/d/1fU2RCYb4eqo6AHR_eqTCYBwuKxH6n40sRD6ybTDj8Cr_3XJa4k8yDe1x/1)"; // 換成你的 URL
 
-    // 開啟鏡頭
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(stream => {
-        video.srcObject = stream;
-        video.setAttribute("playsinline", true);
-        video.play();
-        scan();
+    function mark(status) {
+      const seat = document.getElementById("seat").value;
+      if (!seat) { alert("請輸入座號！"); return; }
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ seat: seat, status: status }),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById("msg").innerText = "✅ 登記完成！";
+        document.getElementById("seat").value = "";
+      })
+      .catch(err => {
+        document.getElementById("msg").innerText = "⚠️ 發生錯誤：" + err;
       });
-
-    function scan() {
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      requestAnimationFrame(scan);
-
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-        if (code) {
-          studentIdInput.value = code.data;
-          form.requestSubmit();
-        }
-      }
     }
-
-    // 表單送出
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const studentId = studentIdInput.value;
-      try {
-        let res = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ studentId }),
-        });
-        let text = await res.text();
-        alert("登記結果：" + text);
-      } catch (err) {
-        alert("送出失敗：" + err);
-      }
-      studentIdInput.value = "";
-    });
   </script>
 </body>
 </html>
+
