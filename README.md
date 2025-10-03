@@ -18,7 +18,7 @@
   <p id="msg"></p>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyR86BoMxyPYGLTNzZQMD1471HtuilyLWAhVWIjOceRNL9UUGmE54vUY5JnvozGMwVP/exec"; // 換成你的 URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbxvSt8eUEVxkG53IZoFlhnAhvOOvL91kLXEwkpqtswIETkkRBZBp3sHkSZMUIZG4PZ-/exec"; // 換成你的 URL
 
     function mark(status) {
       const seat = document.getElementById("seat").value;
